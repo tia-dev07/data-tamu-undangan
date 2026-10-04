@@ -747,6 +747,88 @@
                 transition: none !important;
             }
         }
+
+        /* =====================================================
+   TABEL HP - TETAP HORIZONTAL & BISA DIGESER
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+  /* Kotak tabel bisa digeser kiri-kanan */
+  .table-box {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+  }
+
+  /* Tabel jangan diubah menjadi kartu */
+  .table-box table {
+    display: table !important;
+    width: max-content;
+    min-width: 900px;
+    border-collapse: collapse;
+  }
+
+  .table-box thead {
+    display: table-header-group !important;
+  }
+
+  .table-box tbody {
+    display: table-row-group !important;
+  }
+
+  .table-box tr {
+    display: table-row !important;
+  }
+
+  .table-box th,
+  .table-box td {
+    display: table-cell !important;
+    white-space: nowrap;
+  }
+
+  /* Lebar kolom supaya tetap enak dibaca */
+  .table-box th:nth-child(1),
+  .table-box td:nth-child(1) {
+    min-width: 55px;
+  }
+
+  .table-box th:nth-child(2),
+  .table-box td:nth-child(2) {
+    min-width: 140px;
+  }
+
+  .table-box th:nth-child(3),
+  .table-box td:nth-child(3) {
+    min-width: 180px;
+  }
+
+  .table-box th:nth-child(4),
+  .table-box td:nth-child(4) {
+    min-width: 90px;
+  }
+
+  .table-box th:nth-child(5),
+  .table-box td:nth-child(5) {
+    min-width: 100px;
+  }
+
+  .table-box th:nth-child(6),
+  .table-box td:nth-child(6) {
+    min-width: 180px;
+  }
+
+  .table-box th:nth-child(7),
+  .table-box td:nth-child(7) {
+    min-width: 100px;
+  }
+
+  .table-box th:nth-child(8),
+  .table-box td:nth-child(8) {
+    min-width: 150px;
+  }
+}
+
     </style>
 </head>
 
