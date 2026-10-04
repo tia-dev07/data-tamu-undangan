@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Tamu Undangan</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --bg: #f2f4f1;
+            --surface: #ffffff;
+            --surface-soft: #f8f9f7;
+            --line: #e3e7e2;
+            --line-strong: #cfd6cf;
+            --text: #1f2a27;
+            --muted: #66746f;
+            --primary: #1f4d45;
+            --primary-hover: #17403a;
+            --primary-soft: #e4efec;
+            --brass: #a8832f;
+            --ok-bg: #e1f1e6;
+            --ok-text: #1d6b3c;
+            --wait-bg: #f5ecd8;
+            --wait-text: #8a6516;
+            --danger: #a73a32;
+            --danger-soft: #f8e6e4;
+            --radius: 12px;
+            --shadow: 0 1px 2px rgba(31, 42, 39, .05),
+                       0 6px 20px rgba(31, 42, 39, .05);
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", system-ui, -apple-system,
+                         "Helvetica Neue", Arial, sans-serif;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 15px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1,
+        h2,
+        .login-box h2 {
+            font-family: Georgia, "Times New Roman", serif;
+            font-weight: 600;
+            letter-spacing: .1px;
+        }
+
+        button,
+        input,
+        select {
+            font-size: 15px;
+        }
+
+        button:focus-visible,
+        input:focus-visible,
+        select:focus-visible {
+            outline: 3px solid rgba(31, 77, 69, .25);
+            outline-offset: 1px;
+        }
+
+        /* ================= HEADER ================= */
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: var(--primary);
+            color: #fff;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--brass);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 21px;
+            color: #fff;
+        }
+
+        #logoutBtn {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, .45);
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background .15s, border-color .15s;
+        }
+
+        #logoutBtn:hover {
+            background: rgba(255, 255, 255, .12);
+            border-color: #fff;
+        }
+
+        /* ================= CONTAINER ================= */
+
+        .container {
+            max-width: 1280px;
+            margin: 28px auto;
+            padding: 0 24px;
+        }
+
+        /* ================= SEARCH ================= */
+
+        .toolbar {
+            background: var(--surface);
+            padding: 18px;
+            border-radius: var(--radius);
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow);
+            margin-bottom: 18px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 12px;
+        }
+
+        .search-box input {
+            flex: 1;
+            min-width: 0;
+            padding: 12px 14px;
+            border: 1px solid var(--line-strong);
+            border-radius: 9px;
+            background: var(--surface-soft);
+            color: var(--text);
+            outline: none;
+            transition: border-color .15s,
+                        background .15s,
+                        box-shadow .15s;
+        }
+
+        .search-box input::placeholder {
+            color: #8b9792;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(31, 77, 69, .12);
+        }
+
+        .btn {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background .15s, transform .05s;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        /* ================= STATISTIK ================= */
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary);
+        }
+
+        .stat-card.stat-belum::before {
+            background: var(--brass);
+        }
+
+        .stat-card.stat-selesai::before {
+            background: var(--ok-text);
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .stat-number {
+            color: var(--text);
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .stat-icon {
+            font-size: 20px;
+            margin-right: 5px;
+        }
+
+        /* ================= TABLE ================= */
+
+        .table-box {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            overflow-x: auto;
+            box-shadow: var(--shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 950px;
+        }
+
+        th {
+            background: var(--surface-soft);
+            color: var(--muted);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: .2px;
+            border-bottom: 1px solid var(--line-strong);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr {
+            transition: background .12s;
+        }
+
+        tbody tr:hover {
+            background: #f6f9f7;
+        }
+
+        td:nth-child(1) {
+            color: var(--muted);
+            font-size: 13px;
+            width: 56px;
+        }
+
+        td:nth-child(2) {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        td:nth-child(5) {
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        td:nth-child(6) {
+            color: var(--muted);
+        }
+
+        /* ================= STATUS ================= */
+
+        .status-btn {
+            border: none;
+            cursor: pointer;
+            padding: 7px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: filter .15s, transform .05s;
+        }
+
+        .status-btn:hover {
+            filter: brightness(.95);
+        }
+
+        .status-btn:active {
+            transform: translateY(1px);
+        }
+
+        .status-belum {
+            background: var(--wait-bg);
+            color: var(--wait-text);
+        }
+
+        .status-selesai {
+            background: var(--ok-bg);
+            color: var(--ok-text);
+        }
+
+        /* ================= ACTION ================= */
+
+        td .edit-btn,
+        td .delete-btn {
+            border-radius: 8px;
+            padding: 7px 13px;
+        }
+
+        .edit-btn {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .delete-btn {
+            background: var(--danger-soft);
+            color: var(--danger);
+            margin-left: 6px;
+        }
+
+        /* ================= MODAL ================= */
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: rgba(20, 32, 29, .5);
+            backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            width: 480px;
+            max-width: 100%;
+            max-height: 100%;
+            overflow-y: auto;
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 28px;
+            border-top: 4px solid var(--brass);
+            box-shadow: 0 24px 60px rgba(20, 32, 29, .3);
+        }
+
+        .modal-content h2 {
+            margin: 0 0 20px;
+            font-size: 21px;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1px solid var(--line-strong);
+            border-radius: 9px;
+            background: var(--surface-soft);
+            color: var(--text);
+            outline: none;
+            transition: border-color .15s,
+                        box-shadow .15s,
+                        background .15s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(31, 77, 69, .12);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+        }
+
+        .cancel-btn {
+            background: #e9ede8;
+            color: var(--text);
+        }
+
+        .cancel-btn:hover {
+            background: #dde3dc;
+        }
+
+        /* ================= MESSAGE ================= */
+
+        #message {
+            margin-top: 12px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        #message:empty {
+            margin-top: 0;
+        }
+
+        /* ================= LOADING ================= */
+
+        #loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+        }
+
+        /* ================= LOGIN ================= */
+
+        #loginPage {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background:
+                radial-gradient(
+                    circle at 15% 10%,
+                    rgba(31, 77, 69, .10),
+                    transparent 45%
+                ),
+                radial-gradient(
+                    circle at 90% 90%,
+                    rgba(168, 131, 47, .10),
+                    transparent 40%
+                ),
+                var(--bg);
+        }
+
+        .login-box {
+            background: var(--surface);
+            width: 400px;
+            max-width: 100%;
+            padding: 38px 34px;
+            border-radius: 18px;
+            border-top: 4px solid var(--brass);
+            box-shadow: 0 20px 50px rgba(31, 42, 39, .12);
+        }
+
+        .login-logo {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: var(--primary-soft);
+            border-radius: 50%;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            margin: 0 0 6px;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 26px;
+        }
+
+        .login-box label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            border: 1px solid var(--line-strong);
+            border-radius: 9px;
+            background: var(--surface-soft);
+            color: var(--text);
+            outline: none;
+            transition: border-color .15s,
+                        box-shadow .15s,
+                        background .15s;
+        }
+
+        .login-box input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(31, 77, 69, .12);
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 13px;
+            margin-top: 4px;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .login-box button:hover {
+            background: var(--primary-hover);
+        }
+
+        #loginMessage {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        /* ================= TABLET ================= */
+
+        @media (max-width: 900px) {
+            header {
+                padding: 14px 20px;
+            }
+
+            .container {
+                padding: 0 16px;
+            }
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 700px) {
+
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+
+            .stat-card {
+                padding: 14px 16px;
+            }
+
+            .stat-number {
+                font-size: 24px;
+            }
+
+            header {
+                padding: 12px 14px;
+            }
+
+            header h1 {
+                font-size: 17px;
+            }
+
+            #logoutBtn {
+                padding: 7px 13px;
+                font-size: 14px;
+            }
+
+            .container {
+                margin-top: 16px;
+                padding: 0 12px;
+            }
+
+            .toolbar {
+                padding: 14px;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .btn-primary {
+                width: 100%;
+            }
+
+            .table-box {
+                background: transparent;
+                border: none;
+                box-shadow: none;
+                overflow: visible;
+            }
+
+            table,
+            thead,
+            tbody,
+            tr,
+            td {
+                display: block;
+            }
+
+            table {
+                min-width: 0;
+            }
+
+            thead {
+                display: none;
+            }
+
+            tbody tr {
+                background: var(--surface);
+                border: 1px solid var(--line);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                margin-bottom: 12px;
+                padding: 6px 14px;
+            }
+
+            tbody tr:hover {
+                background: var(--surface);
+            }
+
+            td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 14px;
+                padding: 10px 0;
+                border-bottom: 1px dashed var(--line);
+                text-align: right;
+                width: auto !important;
+            }
+
+            td:last-child {
+                border-bottom: none;
+            }
+
+            td::before {
+                flex-shrink: 0;
+                font-size: 12px;
+                font-weight: 600;
+                color: var(--muted);
+                text-align: left;
+            }
+
+            td:nth-child(1)::before {
+                content: "ID";
+            }
+
+            td:nth-child(2)::before {
+                content: "Nama";
+            }
+
+            td:nth-child(3)::before {
+                content: "Alamat";
+            }
+
+            td:nth-child(4)::before {
+                content: "Beras";
+            }
+
+            td:nth-child(5)::before {
+                content: "Uang";
+            }
+
+            td:nth-child(6)::before {
+                content: "Keterangan";
+            }
+
+            td:nth-child(7)::before {
+                content: "Status";
+            }
+
+            td:nth-child(8)::before {
+                content: "Aksi";
+            }
+
+            td[colspan] {
+                display: block;
+                text-align: center;
+                color: var(--muted);
+            }
+
+            td[colspan]::before {
+                content: none;
+            }
+
+            .modal {
+                align-items: flex-start;
+                padding: 12px;
+            }
+
+            .modal-content {
+                padding: 22px 18px;
+                margin: auto 0;
+            }
+
+            .login-box {
+                padding: 30px 22px;
+            }
+        }
+
+        /* ================= AKSESIBILITAS ================= */
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ================================================= -->
+    <!-- LOGIN -->
+    <!-- ================================================= -->
+
+    <div id="loginPage">
+
+        <div class="login-box">
+
+            <div class="login-logo">💌</div>
+
+            <h2>Data Tamu Undangan</h2>
+
+            <div class="login-subtitle">
+                Login untuk mengelola data tamu
+            </div>
+
+            <label>Email</label>
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Masukkan email"
+            >
+
+            <label>Password</label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Masukkan password"
+            >
+
+            <button onclick="login()">
+                Login
+            </button>
+
+            <div id="loginMessage"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- DASHBOARD -->
+    <!-- ================================================= -->
+
+    <div id="dashboard" style="display:none;">
+
+        <header>
+
+            <h1>💌 Data Tamu Undangan</h1>
+
+            <button id="logoutBtn" onclick="logout()">
+                Keluar
+            </button>
+
+        </header>
+
+
+        <div class="container">
+
+            <!-- SEARCH -->
+
+            <div class="toolbar">
+
+                <div class="search-box">
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="🔎 Cari nama atau alamat..."
+                        oninput="searchTamu()"
+                    >
+
+                    <button
+                        class="btn btn-primary"
+                        onclick="openAddModal()"
+                    >
+                        + Tambah Tamu
+                    </button>
+
+                </div>
+
+                <div id="message"></div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- STATISTIK -->
+            <!-- ================================================= -->
+
+            <div class="stats">
+
+                <div class="stat-card">
+
+                    <div class="stat-label">
+                        <span class="stat-icon">👥</span>
+                        TOTAL TAMU
+                    </div>
+
+                    <div
+                        class="stat-number"
+                        id="totalTamu"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card stat-belum">
+
+                    <div class="stat-label">
+                        <span class="stat-icon">🟡</span>
+                        BELUM
+                    </div>
+
+                    <div
+                        class="stat-number"
+                        id="totalBelum"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+
+                <div class="stat-card stat-selesai">
+
+                    <div class="stat-label">
+                        <span class="stat-icon">🟢</span>
+                        SELESAI
+                    </div>
+
+                    <div
+                        class="stat-number"
+                        id="totalSelesai"
+                    >
+                        0
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- TABLE -->
+            <!-- ================================================= -->
+
+            <div class="table-box">
+
+                <div id="loading">
+                    Memuat data tamu...
+                </div>
+
+                <table
+                    id="tamuTable"
+                    style="display:none;"
+                >
+
+                    <thead>
+
+                        <tr>
+                            <th>ID</th>
+                            <th>Nama</th>
+                            <th>Alamat</th>
+                            <th>Beras</th>
+                            <th>Uang</th>
+                            <th>Keterangan</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="tamuBody"></tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- MODAL TAMBAH / EDIT -->
+    <!-- ================================================= -->
+
+    <div class="modal" id="modal">
+
+        <div class="modal-content">
+
+            <h2 id="modalTitle">
+                Tambah Tamu
+            </h2>
+
+
+            <div class="form-group">
+
+                <label>Nama</label>
+
+                <input
+                    type="text"
+                    id="nama"
+                    placeholder="Nama tamu"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Alamat</label>
+
+                <input
+                    type="text"
+                    id="alamat"
+                    placeholder="Alamat"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Beras</label>
+
+                <input
+                    type="text"
+                    id="beras"
+                    placeholder="Contoh: 1/2"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Uang</label>
+
+                <input
+                    type="text"
+                    id="uang"
+                    placeholder="Contoh: 50.000"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Keterangan</label>
+
+                <input
+                    type="text"
+                    id="keterangan"
+                    placeholder="Contoh: minyak 2 L"
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Status</label>
+
+                <select id="status">
+
+                    <option value="Belum">
+                        Belum
+                    </option>
+
+                    <option value="Selesai">
+                        Selesai
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="modal-buttons">
+
+                <button
+                    class="btn btn-primary"
+                    onclick="saveTamu()"
+                >
+                    Simpan
+                </button>
+
+                <button
+                    class="btn cancel-btn"
+                    onclick="closeModal()"
+                >
+                    Batal
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================================= -->
+    <!-- JAVASCRIPT -->
+    <!-- ================================================= -->
+
+    <script>
+
+        // =====================================================
+        // SUPABASE
+        // =====================================================
+
+        const SUPABASE_URL =
+            "https://quadgcqhttjsnwxbnedx.supabase.co";
+
+        const SUPABASE_PUBLISHABLE_KEY =
+            "sb_publishable_thJEMEgwxFRkiJfJhrUdDg_GhyCnJc7";
+
+        const supabaseClient =
+            window.supabase.createClient(
+                SUPABASE_URL,
+                SUPABASE_PUBLISHABLE_KEY
+            );
+
+
+        // =====================================================
+        // VARIABEL
+        // =====================================================
+
+        let semuaTamu = [];
+        let editId = null;
+
+
+        // =====================================================
+        // CEK LOGIN
+        // =====================================================
+
+        checkLogin();
+
+        async function checkLogin() {
+
+            const {
+                data: { session }
+            } = await supabaseClient.auth.getSession();
+
+            if (session) {
+                tampilkanDashboard();
+            } else {
+                tampilkanLogin();
+            }
+
+        }
+
+
+        // =====================================================
+        // LOGIN
+        // =====================================================
+
+        async function login() {
+
+            const email =
+                document
+                    .getElementById("email")
+                    .value
+                    .trim();
+
+            const password =
+                document
+                    .getElementById("password")
+                    .value;
+
+            const pesan =
+                document.getElementById("loginMessage");
+
+
+            if (!email || !password) {
+
+                pesan.style.color = "#dc2626";
+
+                pesan.textContent =
+                    "Email dan password wajib diisi.";
+
+                return;
+            }
+
+
+            pesan.style.color = "#64748b";
+
+            pesan.textContent =
+                "Sedang login...";
+
+
+            const { error } =
+                await supabaseClient.auth.signInWithPassword({
+
+                    email: email,
+                    password: password
+
+                });
+
+
+            if (error) {
+
+                pesan.style.color = "#dc2626";
+
+                pesan.textContent =
+                    "Login gagal: " + error.message;
+
+                return;
+            }
+
+
+            pesan.textContent = "";
+
+            tampilkanDashboard();
+
+        }
+
+
+        // =====================================================
+        // LOGOUT
+        // =====================================================
+
+        async function logout() {
+
+            await supabaseClient.auth.signOut();
+
+            tampilkanLogin();
+
+        }
+
+
+        // =====================================================
+        // TAMPILKAN LOGIN
+        // =====================================================
+
+        function tampilkanLogin() {
+
+            document.getElementById("loginPage").style.display =
+                "flex";
+
+            document.getElementById("dashboard").style.display =
+                "none";
+
+        }
+
+
+        // =====================================================
+        // TAMPILKAN DASHBOARD
+        // =====================================================
+
+        function tampilkanDashboard() {
+
+            document.getElementById("loginPage").style.display =
+                "none";
+
+            document.getElementById("dashboard").style.display =
+                "block";
+
+            loadTamu();
+
+        }
+
+
+        // =====================================================
+        // AMBIL DATA TAMU
+        // =====================================================
+
+        async function loadTamu() {
+
+            const loading =
+                document.getElementById("loading");
+
+            const table =
+                document.getElementById("tamuTable");
+
+
+            loading.style.display = "block";
+
+            table.style.display = "none";
+
+
+            const {
+                data,
+                error
+            } = await supabaseClient
+                .from("Tamu")
+                .select("*")
+                .order("id", {
+                    ascending: true
+                });
+
+
+            if (error) {
+
+                loading.textContent =
+                    "Gagal mengambil data: " +
+                    error.message;
+
+                return;
+            }
+
+
+            semuaTamu = data || [];
+
+
+            // UPDATE STATISTIK
+            updateStatistik(semuaTamu);
+
+
+            loading.style.display = "none";
+
+            table.style.display = "table";
+
+
+            tampilkanTamu(semuaTamu);
+
+        }
+
+
+        // =====================================================
+        // UPDATE STATISTIK
+        // =====================================================
+
+        function updateStatistik(data) {
+
+            const total =
+                data.length;
+
+
+            const belum =
+                data.filter(tamu =>
+                    String(
+                        tamu.status || "Belum"
+                    ).toLowerCase() === "belum"
+                ).length;
+
+
+            const selesai =
+                data.filter(tamu =>
+                    String(
+                        tamu.status || "Belum"
+                    ).toLowerCase() === "selesai"
+                ).length;
+
+
+            document.getElementById("totalTamu")
+                .textContent = total;
+
+            document.getElementById("totalBelum")
+                .textContent = belum;
+
+            document.getElementById("totalSelesai")
+                .textContent = selesai;
+
+        }
+
+
+        // =====================================================
+        // TAMPILKAN DATA KE TABLE
+        // =====================================================
+
+        function tampilkanTamu(data) {
+
+            const body =
+                document.getElementById("tamuBody");
+
+
+            body.innerHTML = "";
+
+
+            if (data.length === 0) {
+
+                body.innerHTML = `
+                    <tr>
+                        <td
+                            colspan="8"
+                            style="text-align:center;"
+                        >
+                            Belum ada data tamu.
+                        </td>
+                    </tr>
+                `;
+
+                return;
+            }
+
+
+            data.forEach(tamu => {
+
+                const tr =
+                    document.createElement("tr");
+
+
+                const status =
+                    String(
+                        tamu.status || "Belum"
+                    ).toLowerCase();
+
+
+                const statusClass =
+                    status === "selesai"
+                        ? "status-selesai"
+                        : "status-belum";
+
+
+                const statusText =
+                    status === "selesai"
+                        ? "Selesai"
+                        : "Belum";
+
+
+                tr.innerHTML = `
+
+                    <td>
+                        ${escapeHTML(tamu.id)}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(tamu.nama)}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(tamu.alamat)}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(tamu.beras)}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(tamu.uang)}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(tamu.keterangan)}
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="status-btn ${statusClass}"
+                            onclick="ubahStatus(
+                                ${tamu.id},
+                                '${statusText}'
+                            )"
+                        >
+                            ${statusText}
+                        </button>
+
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="status-btn edit-btn"
+                            onclick="editTamu(${tamu.id})"
+                        >
+                            Edit
+                        </button>
+
+                        <button
+                            class="status-btn delete-btn"
+                            onclick="hapusTamu(${tamu.id})"
+                        >
+                            Hapus
+                        </button>
+
+                    </td>
+
+                `;
+
+
+                body.appendChild(tr);
+
+            });
+
+        }
+
+
+        // =====================================================
+        // SEARCH NAMA + ALAMAT
+        // =====================================================
+
+        function searchTamu() {
+
+            const keyword =
+                document
+                    .getElementById("searchInput")
+                    .value
+                    .toLowerCase()
+                    .trim();
+
+
+            if (!keyword) {
+
+                tampilkanTamu(semuaTamu);
+
+                return;
+            }
+
+
+            const hasil =
+                semuaTamu.filter(tamu => {
+
+                    const nama =
+                        String(
+                            tamu.nama || ""
+                        ).toLowerCase();
+
+
+                    const alamat =
+                        String(
+                            tamu.alamat || ""
+                        ).toLowerCase();
+
+
+                    return (
+                        nama.includes(keyword) ||
+                        alamat.includes(keyword)
+                    );
+
+                });
+
+
+            tampilkanTamu(hasil);
+
+        }
+
+
+        // =====================================================
+        // TAMBAH DATA
+        // =====================================================
+
+        function openAddModal() {
+
+            editId = null;
+
+
+            document
+                .getElementById("modalTitle")
+                .textContent =
+                "Tambah Tamu";
+
+
+            document.getElementById("nama").value = "";
+
+            document.getElementById("alamat").value = "";
+
+            document.getElementById("beras").value = "";
+
+            document.getElementById("uang").value = "";
+
+            document.getElementById("keterangan").value = "";
+
+            document.getElementById("status").value =
+                "Belum";
+
+
+            document.getElementById("modal").style.display =
+                "flex";
+
+        }
+
+
+        // =====================================================
+        // EDIT DATA
+        // =====================================================
+
+        function editTamu(id) {
+
+            const tamu =
+                semuaTamu.find(
+                    item => item.id === id
+                );
+
+
+            if (!tamu) return;
+
+
+            editId = id;
+
+
+            document
+                .getElementById("modalTitle")
+                .textContent =
+                "Edit Data Tamu";
+
+
+            document.getElementById("nama").value =
+                tamu.nama || "";
+
+
+            document.getElementById("alamat").value =
+                tamu.alamat || "";
+
+
+            document.getElementById("beras").value =
+                tamu.beras || "";
+
+
+            document.getElementById("uang").value =
+                tamu.uang || "";
+
+
+            document.getElementById("keterangan").value =
+                tamu.keterangan || "";
+
+
+            document.getElementById("status").value =
+                tamu.status || "Belum";
+
+
+            document.getElementById("modal").style.display =
+                "flex";
+
+        }
+
+
+        // =====================================================
+        // SIMPAN TAMBAH / EDIT
+        // =====================================================
+
+        async function saveTamu() {
+
+            const data = {
+
+                nama:
+                    document
+                        .getElementById("nama")
+                        .value
+                        .trim(),
+
+                alamat:
+                    document
+                        .getElementById("alamat")
+                        .value
+                        .trim(),
+
+                beras:
+                    document
+                        .getElementById("beras")
+                        .value
+                        .trim(),
+
+                uang:
+                    document
+                        .getElementById("uang")
+                        .value
+                        .trim(),
+
+                keterangan:
+                    document
+                        .getElementById("keterangan")
+                        .value
+                        .trim(),
+
+                status:
+                    document
+                        .getElementById("status")
+                        .value
+
+            };
+
+
+            if (!data.nama) {
+
+                alert("Nama tamu wajib diisi.");
+
+                return;
+            }
+
+
+            let error;
+
+
+            if (editId === null) {
+
+                const result =
+                    await supabaseClient
+                        .from("Tamu")
+                        .insert([data]);
+
+                error = result.error;
+
+            } else {
+
+                const result =
+                    await supabaseClient
+                        .from("Tamu")
+                        .update(data)
+                        .eq("id", editId);
+
+                error = result.error;
+
+            }
+
+
+            if (error) {
+
+                alert(
+                    "Gagal menyimpan data:\n" +
+                    error.message
+                );
+
+                return;
+            }
+
+
+            closeModal();
+
+            await loadTamu();
+
+        }
+
+
+        // =====================================================
+        // UBAH STATUS
+        // =====================================================
+
+        async function ubahStatus(
+            id,
+            statusSekarang
+        ) {
+
+            const statusBaru =
+                statusSekarang === "Selesai"
+                    ? "Belum"
+                    : "Selesai";
+
+
+            const { error } =
+                await supabaseClient
+                    .from("Tamu")
+                    .update({
+                        status: statusBaru
+                    })
+                    .eq("id", id);
+
+
+            if (error) {
+
+                alert(
+                    "Gagal mengubah status:\n" +
+                    error.message
+                );
+
+                return;
+            }
+
+
+            await loadTamu();
+
+        }
+
+
+        // =====================================================
+        // HAPUS DATA
+        // =====================================================
+
+        async function hapusTamu(id) {
+
+            const yakin =
+                confirm(
+                    "Yakin ingin menghapus data tamu ini?"
+                );
+
+
+            if (!yakin) return;
+
+
+            const { error } =
+                await supabaseClient
+                    .from("Tamu")
+                    .delete()
+                    .eq("id", id);
+
+
+            if (error) {
+
+                alert(
+                    "Gagal menghapus data:\n" +
+                    error.message
+                );
+
+                return;
+            }
+
+
+            await loadTamu();
+
+        }
+
+
+        // =====================================================
+        // TUTUP MODAL
+        // =====================================================
+
+        function closeModal() {
+
+            document.getElementById("modal").style.display =
+                "none";
+
+        }
+
+
+        // =====================================================
+        // AMANKAN TEKS
+        // =====================================================
+
+        function escapeHTML(value) {
+
+            return String(value ?? "")
+
+                .replace(/&/g, "&amp;")
+
+                .replace(/</g, "&lt;")
+
+                .replace(/>/g, "&gt;")
+
+                .replace(/"/g, "&quot;")
+
+                .replace(/'/g, "&#039;");
+
+        }
+
+    </script>
+
+</body>
+</html>
